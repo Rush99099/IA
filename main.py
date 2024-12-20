@@ -519,6 +519,14 @@ def printMenu():
     print("7.Busca Uniforme")
     print("0.Sair")
 
+def printMenus2():
+    print("-----------------Escolha o algoritmo------------")
+    print("1. DFS (Busca em Profundidade)")
+    print("2. BFS (Busca em Largura)")
+    print("3. Greedy")
+    print("0.Sair")
+
+
 def main():
     # Importar o grafo e mostrar
     #print("INTRODUZA O FICHEIRO DO GRAFO")
@@ -601,24 +609,25 @@ def main():
             else:
                 print("Opção inválida!")
     elif restricao == 2:
-        printMenu()
-        
-        if escolha == 1:
-            inicio, destino = 'A', 'E'
-            caminho = dfs(grafo, inicio, destino)
-            print(f"Caminho encontrado (DFS): {caminho}")
-            desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
-        elif escolha == 2:
-            #inicio, destino = 'A', 'E'
-            caminho = bfs(grafo, inicio, destino)
-            print(f"Caminho encontrado (BFS): {caminho}")
-            desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
-        elif escolha == 3:
-            #inicio, destino = 'A', 'E'
-            heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}  # Heurística (distâncias estimadas ao destino)
-            caminho = algoritmo_greedy(grafo, inicio, destino, heuristica)
-            print(f"Caminho encontrado (Greedy): {caminho}")
-            desenhar_resultado(grafo, caminho, titulo="Resultado do GREEDY")
+        while(escolha != 0):
+            printMenus2()
+            escolha = int(input("Digite o número do algoritmo: "))            
+            if escolha == 1:
+                inicio, destino = 'A', 'E'
+                caminho = dfs(grafo, inicio, destino)
+                print(f"Caminho encontrado (DFS): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
+            elif escolha == 2:
+                #inicio, destino = 'A', 'E'
+                caminho = bfs(grafo, inicio, destino)
+                print(f"Caminho encontrado (BFS): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
+            elif escolha == 3:
+                #inicio, destino = 'A', 'E'
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}  # Heurística (distâncias estimadas ao destino)
+                caminho = algoritmo_greedy(grafo, inicio, destino, heuristica)
+                print(f"Caminho encontrado (Greedy): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do GREEDY")
 
 
     
