@@ -1,11 +1,11 @@
 # Zonas
-A; alta; {'caminhão': True, 'jipe': True, 'drone': True}
-B; baixa; {'caminhão': True, 'jipe': False, 'drone': True}
-C; média; {'caminhão': True, 'jipe': True, 'drone': False}
-D; alta; {'caminhão': False, 'jipe': True, 'drone': True}
-E; baixa; {'caminhão': True, 'jipe': True, 'drone': True}
-F; alta; {'caminhão': True, 'jipe': False, 'drone': True}
-G; média; {'caminhão': False, 'jipe': True, 'drone': True}
+A; alta; 1000; {'caminhão': True, 'jipe': True, 'drone': True}
+B; baixa; 50; {'caminhão': True, 'jipe': False, 'drone': True}
+C; média; 200; {'caminhão': True, 'jipe': True, 'drone': False}
+D; alta; 2000; {'caminhão': False, 'jipe': True, 'drone': True}
+E; baixa; 10; {'caminhão': True, 'jipe': True, 'drone': True}
+F; alta; 2500; {'caminhão': True, 'jipe': False, 'drone': True}
+G; média; 300; {'caminhão': False, 'jipe': True, 'drone': True}
 
 # Rotas
 A -> B; 8; livre; {'caminhão': 4, 'jipe': 3, 'drone': 2}
