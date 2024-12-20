@@ -618,12 +618,12 @@ def main():
                 print(f"Caminho encontrado (DFS): {caminho}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
             elif escolha == 2:
-                #inicio, destino = 'A', 'E'
+                inicio, destino = 'A', 'E'
                 caminho = bfs(grafo, inicio, destino)
                 print(f"Caminho encontrado (BFS): {caminho}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
             elif escolha == 3:
-                #inicio, destino = 'A', 'E'
+                inicio, destino = 'A', 'E'
                 heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}  # Heurística (distâncias estimadas ao destino)
                 caminho = algoritmo_greedy(grafo, inicio, destino, heuristica)
                 print(f"Caminho encontrado (Greedy): {caminho}")
