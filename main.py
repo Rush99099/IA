@@ -576,10 +576,10 @@ def main():
     print("=============================")
     restricao = int(input("Escolha a opção: "))
 
-    dinamicas(grafo, zonas)
 
     while True:  # Loop principal
         if restricao == 1:
+            dinamicas(grafo, zonas)
             printMenu()
         else:
             printMenus2()
@@ -637,8 +637,9 @@ def main():
                 desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
             elif escolha == 3:
                 heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}
-                caminho = algoritmo_greedy_com_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
+                caminho, combustivel = algoritmo_greedy_com_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 print(f"\nCaminho encontrado (Greedy): {caminho}")
+                print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
             elif escolha == 4:
                 caminho, combustivel = algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
