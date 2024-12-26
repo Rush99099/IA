@@ -602,7 +602,7 @@ def main():
             print("=============================")
             veiculo = int(input("Escolha o veículo: "))
             if veiculo == 1:
-                tipoVeiculo = 'caminhão'
+                tipoVeiculo = 'caminão'
             elif veiculo == 2:
                 tipoVeiculo = 'jipe'
             elif veiculo == 3:
