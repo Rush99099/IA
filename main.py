@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque
 import heapq
-
+import random
 
 def importar_grafo_txt(caminho_arquivo):
     """
@@ -478,35 +478,57 @@ def busca_custo_uniforme_com_restricoes(grafo, zonas, inicio, destino, restricoe
 
     return None, float('inf')
 
-def aplicar_alteracoes(grafo, zonas, caminho_alteracoes):
-    """
-    Aplica alterações dinâmicas no grafo e nas zonas.
-    """
-    with open(caminho_alteracoes, 'r') as arquivo:
-        for linha in arquivo:
-            linha = linha.strip()
-            if not linha or linha.startswith('#'):
-                continue
+import random
 
-            if '->' in linha:
-                # Alteração em uma rota
-                partes = linha.split(',')
-                origem_destino = partes[0].split('->')
-                origem = origem_destino[0].strip()
-                destino = origem_destino[1].strip()
-                nova_condicao = partes[1].strip()
+def dinamicas(grafo, zonas):
+    print("---------------------Dinamicas----------------")
+    print("1. Sim")
+    print("2. Nao")
+    opcao = int(input("Escolha a sua opcao::"))
+    
+    alteracoes = []  # Lista para armazenar as alterações
+    
+    if opcao == 1:
+        for origem, destinos in grafo.items():
+            for destino, atributos in destinos.items():
+                # Alterar somente rotas "livre" ou "somente_drones"
+                if atributos['condicao'] in ['livre', 'somente_drones']:
+                    # Decisão aleatória: bloquear a rota ou alterar o combustível
+                    acao = random.choices(
+                        ['nenhum', 'bloquear', 'alterar_combustivel'],
+                        weights=[0.5, 0.2, 0.3],  # 50% para nenhum, 20% para bloquear, 30% para alterar combustível
+                        k=1
+                    )[0]
 
-                if origem in grafo and destino in grafo[origem]:
-                    grafo[origem][destino]['condicao'] = nova_condicao
+                    if acao == 'bloquear':
+                        atributos['condicao'] = 'bloqueada'
+                        atributos['combustivel'] = {}  # Remove o consumo de combustível
+                        alteracoes.append(f"Rota {origem} -> {destino}: bloqueada")
+                    
+                    elif acao == 'alterar_combustivel':
+                        # Gera uma única percentagem de aumento para toda a rota
+                        aumento = random.uniform(1.3, 2.0)
+                        detalhes_alteracao = []
+                        for veiculo in atributos['combustivel']:
+                            novo_valor = int(atributos['combustivel'][veiculo] * aumento)
+                            detalhes_alteracao.append(f"{veiculo}: {atributos['combustivel'][veiculo]} -> {novo_valor}")
+                            atributos['combustivel'][veiculo] = novo_valor
+                        alteracoes.append(f"Rota {origem} -> {destino}: combustível alterado ({', '.join(detalhes_alteracao)})")
 
-            else:
-                # Alteração em uma zona
-                partes = linha.split(',', maxsplit=1)
-                nome_zona = partes[0].strip()
-                nova_gravidade = partes[1].strip()
+    # Imprimir as alterações realizadas
+    print("\nAlterações realizadas:")
+    if alteracoes:
+        for alteracao in alteracoes:
+            print(f"  - {alteracao}")
+    else:
+        print("  Nenhuma alteração foi realizada.")
+    
+    print("\nGrafo alterado:")
+    mostrar_grafo(grafo, zonas)
+    
+    return grafo
 
-                if nome_zona in zonas:
-                    zonas[nome_zona]['gravidade'] = nova_gravidade
+   
 
 def printMenu():
     print("-----------------Escolha o algoritmo------------")
@@ -543,6 +565,7 @@ def main():
     restricao = int(input("Escolha as restrição::"))
     
     escolha = -1
+    dinamicas(grafo, zonas)
     if restricao == 1:
         while(escolha != 0):
             printMenu()    
