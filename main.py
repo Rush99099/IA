@@ -195,7 +195,7 @@ def dfs(grafo, inicio, destino, caminho=None, visitados=None):
     for vizinho, atributos in grafo.get(inicio, {}).items():
         if (
             vizinho not in visitados and 
-            atributos['condicao'] == 'livre'  # Apenas caminhos livres
+            atributos['condicao'] == 'livre' or atributos['condicao'] == 'somente_drones'  # Apenas caminhos livres
         ):
             resultado = dfs(grafo, vizinho, destino, caminho + [vizinho], visitados)
             if resultado:
@@ -256,7 +256,7 @@ def bfs_com_varias_restricoes(grafo, zonas, inicio, destino, restricoes):
     """
     fila = deque([(inicio, [inicio], 0)])  # (nó_atual, caminho_percorrido, combustível_usado)
     visitados = set()
-
+    
     while fila:
         atual, caminho, combustivel = fila.popleft()
         if atual == destino:
@@ -602,25 +602,32 @@ def main():
             print("=============================")
             veiculo = int(input("Escolha o veículo: "))
             if veiculo == 1:
-                tipoVeiculo = 'caminão'
+                tipoVeiculo = 'camião'
+                combustivel = int(input("Insira a quantidade de combustível: "))
+                restricoes = {
+                    'veiculo': tipoVeiculo,
+                    'combustivel_maximo': combustivel,
+                    'condicoes_permitidas': {'livre'}
+                }    
             elif veiculo == 2:
                 tipoVeiculo = 'jipe'
+                combustivel = int(input("Insira a quantidade de combustível: "))
+                restricoes = {
+                    'veiculo': tipoVeiculo,
+                    'combustivel_maximo': combustivel,
+                    'condicoes_permitidas': {'livre'}
+                }    
             elif veiculo == 3:
                 tipoVeiculo = 'drone'
+                combustivel = int(input("Insira a quantidade de combustível: "))
+                restricoes = {
+                    'veiculo': tipoVeiculo,
+                    'combustivel_maximo': combustivel,
+                    'condicoes_permitidas': {'livre','somente_drones'}
+                }    
             else:
                 print("Opção inválida! Tente novamente.")
                 continue
-
-            print("\n=============================")
-            print("     CONFIGURAR COMBUSTÍVEL     ")
-            print("=============================")
-            combustivel = int(input("Insira a quantidade de combustível: "))
-
-            restricoes = {
-                'veiculo': tipoVeiculo,
-                'combustivel_maximo': combustivel,
-                'condicoes_permitidas': {'livre'}
-            }
 
             heuristica = {'A': 30, 'B': 20, 'C': 15, 'D': 10, 'E': 0}
             origem, destino = 'A', 'E'
