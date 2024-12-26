@@ -478,12 +478,13 @@ def busca_custo_uniforme_com_restricoes(grafo, zonas, inicio, destino, restricoe
 
     return None, float('inf')
 
-import random
-
 def dinamicas(grafo, zonas):
-    print("---------------------Dinamicas----------------")
+    print("\n=============================")
+    print("    RESTRIÇÕES DINAMICAS       ")
+    print("=============================")
     print("1. Sim")
-    print("2. Nao")
+    print("2. Não")
+    print("=============================")
     opcao = int(input("Escolha a sua opcao::"))
     
     alteracoes = []  # Lista para armazenar as alterações
@@ -506,7 +507,7 @@ def dinamicas(grafo, zonas):
                         alteracoes.append(f"Rota {origem} -> {destino}: bloqueada")
                     
                     elif acao == 'alterar_combustivel':
-                        # Gera uma única percentagem de aumento para toda a rota
+                         # Gera uma única percentagem de aumento para toda a rota
                         aumento = random.uniform(1.3, 2.0)
                         detalhes_alteracao = []
                         for veiculo in atributos['combustivel']:
@@ -515,144 +516,171 @@ def dinamicas(grafo, zonas):
                             atributos['combustivel'][veiculo] = novo_valor
                         alteracoes.append(f"Rota {origem} -> {destino}: combustível alterado ({', '.join(detalhes_alteracao)})")
 
-    # Imprimir as alterações realizadas
-    print("\nAlterações realizadas:")
-    if alteracoes:
-        for alteracao in alteracoes:
-            print(f"  - {alteracao}")
-    else:
-        print("  Nenhuma alteração foi realizada.")
+        # Imprimir as alterações realizadas
+        print("\nAlterações realizadas:")
+        if alteracoes:
+            for alteracao in alteracoes:
+                print(f"  - {alteracao}")
+        else:
+            print("  Nenhuma alteração foi realizada.")
     
-    print("\nGrafo alterado:")
-    mostrar_grafo(grafo, zonas)
+        print("\nGrafo alterado:")
+        mostrar_grafo(grafo, zonas)
     
     return grafo
 
    
 
 def printMenu():
-    print("-----------------Escolha o algoritmo------------")
+    print("\n=============================")
+    print("     ALGORITMOS DE BUSCA       ")
+    print("=============================")
     print("1. DFS (Busca em Profundidade)")
     print("2. BFS (Busca em Largura)")
     print("3. Greedy")
-    print("4.A*")
-    print("5.A* dinamico")
-    print("6.LPA*")
-    print("7.Busca Uniforme")
-    print("0.Sair")
+    print("4. A*")
+    print("5. A* Dinâmico")
+    print("6. LPA*")
+    print("7. Busca Uniforme")
+    print("0. Sair")
+    print("=============================")
+
 
 def printMenus2():
-    print("-----------------Escolha o algoritmo------------")
+    print("\n=============================")
+    print("    ALGORITMOS DE BUSCA       ")
+    print("=============================")
     print("1. DFS (Busca em Profundidade)")
     print("2. BFS (Busca em Largura)")
     print("3. Greedy")
-    print("0.Sair")
+    print("0. Sair")
+    print("=============================")
 
 
 def main():
-    # Importar o grafo e mostrar
-    #print("INTRODUZA O FICHEIRO DO GRAFO")
-    nomeGrafo = input("Insira o nome do ficheiro:: ")
+    print("\n=============================")
+    print("   SISTEMA DE RESOLUÇÃO DE   ")
+    print("    PROBLEMAS DE BUSCA        ")
+    print("=============================")
+
+    nomeGrafo = input("Insira o nome do ficheiro do grafo: ")
     caminho = nomeGrafo
     grafo, zonas = importar_grafo_txt(caminho)
-    # Mostrar o grafo
     mostrar_grafo(grafo, zonas)
 
-    
-    print("---------------------Restrições----------------")
+    print("\n=============================")
+    print("        RESTRIÇÕES           ")
+    print("=============================")
     print("1. Com Restrições")
     print("2. Sem Restrições")
-    restricao = int(input("Escolha as restrição::"))
-    
-    escolha = -1
+    print("=============================")
+    restricao = int(input("Escolha a opção: "))
+
     dinamicas(grafo, zonas)
-    if restricao == 1:
-        while(escolha != 0):
-            printMenu()    
-            escolha = int(input("Digite o número do algoritmo: "))
-            
-            print("------------------Escolha o tipo de veículo------------")
-            print("1.Camião")
-            print("2.Jipe")
-            print("3.Drone")
-            veiculo = int(input("Tipo de veículo:: "))
-            if(veiculo == 1):
+
+    while True:  # Loop principal
+        if restricao == 1:
+            printMenu()
+        else:
+            printMenus2()
+
+        escolha = int(input("Escolha o algoritmo: "))
+
+        if escolha == 0:
+            print("\n=============================")
+            print("     A ENCERRAR O PROGRAMA      ")
+            print("=============================")
+            break
+
+        if restricao == 1:
+            print("\n=============================")
+            print("     SELEÇÃO DO VEÍCULO       ")
+            print("=============================")
+            print("1. Camião")
+            print("2. Jipe")
+            print("3. Drone")
+            print("=============================")
+            veiculo = int(input("Escolha o veículo: "))
+            if veiculo == 1:
                 tipoVeiculo = 'caminhão'
-            elif (veiculo == 2):
+            elif veiculo == 2:
                 tipoVeiculo = 'jipe'
+            elif veiculo == 3:
+                tipoVeiculo = 'drone'
             else:
-                tipoVeiculo = 'drone'        
-            
-            print("------------------Quantidade de combustivel------------")
-            combustivel = int(input("Quantidade de combustivel:: "))
-            
+                print("Opção inválida! Tente novamente.")
+                continue
+
+            print("\n=============================")
+            print("     CONFIGURAR COMBUSTÍVEL     ")
+            print("=============================")
+            combustivel = int(input("Insira a quantidade de combustível: "))
+
             restricoes = {
                 'veiculo': tipoVeiculo,
                 'combustivel_maximo': combustivel,
                 'condicoes_permitidas': {'livre'}
             }
-            
-            heuristica = {'A': 30, 'B': 20, 'C': 15, 'D': 10, 'E': 0}
 
+            heuristica = {'A': 30, 'B': 20, 'C': 15, 'D': 10, 'E': 0}
             origem, destino = 'A', 'E'
+
             if escolha == 1:
                 caminho, combustivel = dfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
-                print(f"Caminho encontrado (BFS): {caminho}, Combustível usado: {combustivel}")
-                desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
-            elif escolha == 2:
-                
-                caminho, combustivel = bfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
-                print(f"Caminho encontrado (BFS): {caminho}, Combustível usado: {combustivel}")
+                print(f"\nCaminho encontrado (DFS): {caminho}")
+                print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
+            elif escolha == 2:
+                caminho, combustivel = bfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
+                print(f"\nCaminho encontrado (BFS): {caminho}")
+                print(f"Combustível usado: {combustivel}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
             elif escolha == 3:
-                
-                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}  # Heurística (distâncias estimadas ao destino)
-                caminho = algoritmo_greedy_com_restricoes (grafo, zonas, origem, destino, heuristica, restricoes)
-                print(f"Caminho encontrado (Greedy): {caminho}")
-                desenhar_resultado(grafo, caminho, titulo="Resultado do GREEDY")
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}
+                caminho = algoritmo_greedy_com_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
+                print(f"\nCaminho encontrado (Greedy): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
             elif escolha == 4:
-                caminho, combustivel = algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, 'A', 'E', heuristica, restricoes)
-                print(f"Caminho encontrado (A*): {caminho}, Combustível usado: {combustivel}")
-                desenhar_resultado(grafo,caminho,"Resultado do A*")
+                caminho, combustivel = algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
+                print(f"\nCaminho encontrado (A*): {caminho}")
+                print(f"Combustível usado: {combustivel}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do A*")
             elif escolha == 5:
                 astar_dinamico = AStarDinamicoComRestricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 caminho, custo = astar_dinamico.compute()
-                print(f"Caminho encontrado (A* Dinâmico): {caminho}, Combustível usado: {custo}")
-                desenhar_resultado(grafo,caminho,"Resultado do A* Dinamico")
+                print(f"\nCaminho encontrado (A* Dinâmico): {caminho}")
+                print(f"Combustível usado: {custo}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do A* Dinâmico")
             elif escolha == 6:
                 lpa = LPAStarComRestricoes(grafo, zonas, origem, destino, restricoes)
                 lpa.compute_shortest_path()
                 caminho = lpa.get_path()
-                print(f"Caminho encontrado (LPA*): {caminho}")
-                desenhar_resultado(grafo,caminho,"Resultado do LPA*")
+                print(f"\nCaminho encontrado (LPA*): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do LPA*")
             elif escolha == 7:
                 caminho, combustivel = busca_custo_uniforme_com_restricoes(grafo, zonas, origem, destino, restricoes)
-                print(f"Caminho encontrado (UCS): {caminho}, Combustível usado: {combustivel}")
-                desenhar_resultado(grafo,caminho,"Resultado UCS")
+                print(f"\nCaminho encontrado (UCS): {caminho}")
+                print(f"Combustível usado: {combustivel}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado UCS")
             else:
                 print("Opção inválida!")
-    elif restricao == 2:
-        while(escolha != 0):
-            printMenus2()
-            escolha = int(input("Digite o número do algoritmo: "))            
+        else:
+            inicio, destino = 'A', 'E'
             if escolha == 1:
-                inicio, destino = 'A', 'E'
                 caminho = dfs(grafo, inicio, destino)
-                print(f"Caminho encontrado (DFS): {caminho}")
+                print(f"\nCaminho encontrado (DFS): {caminho}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
             elif escolha == 2:
-                inicio, destino = 'A', 'E'
                 caminho = bfs(grafo, inicio, destino)
-                print(f"Caminho encontrado (BFS): {caminho}")
+                print(f"\nCaminho encontrado (BFS): {caminho}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
             elif escolha == 3:
-                inicio, destino = 'A', 'E'
-                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}  # Heurística (distâncias estimadas ao destino)
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}
                 caminho = algoritmo_greedy(grafo, inicio, destino, heuristica)
-                print(f"Caminho encontrado (Greedy): {caminho}")
-                desenhar_resultado(grafo, caminho, titulo="Resultado do GREEDY")
-
-
+                print(f"\nCaminho encontrado (Greedy): {caminho}")
+                desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
+            else:
+                print("Opção inválida!")
     
 
 if __name__ == "__main__":
