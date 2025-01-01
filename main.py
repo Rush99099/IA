@@ -354,23 +354,29 @@ def algoritmo_greedy_com_restricoes(grafo, zonas, inicio, destino, heuristica, r
     return melhor_caminho, combustivel
 
 
-def algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, inicio, destino, heuristica, restricoes, combustivel=0):
+def algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, inicio, destino, heuristica, restricoes):
     """
-    Algoritmo A* com restrições de gravidade, combustível e acessibilidade.
+    A* com restrições que garante um caminho, mesmo que não chegue ao destino.
     """
-    fila = [(heuristica[inicio], 0, inicio, [inicio])]  # (f, g, nó_atual, caminho)
+    fila = [(heuristica[inicio], 0, inicio, [inicio])]  # (f, g, nó atual, caminho)
     visitados = set()
+    melhor_caminho = None
 
     while fila:
         f, g, atual, caminho = heapq.heappop(fila)
+        visitados.add(atual)
+
+        # Atualizar melhor caminho
+        if melhor_caminho is None or len(caminho) > len(melhor_caminho):
+            melhor_caminho = caminho
+
+        # Verificar se chegou ao destino
         if atual == destino:
             return caminho, g
-        if atual in visitados:
-            continue
-        visitados.add(atual)
 
         for vizinho, atributos in grafo.get(atual, {}).items():
             if (
+                vizinho not in visitados and
                 atributos['condicao'] in restricoes['condicoes_permitidas'] and
                 restricoes['veiculo'] in atributos['combustivel'] and
                 g + atributos['combustivel'][restricoes['veiculo']] <= restricoes['combustivel_maximo'] and
@@ -380,10 +386,13 @@ def algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, inicio, destino, heu
                 f_novo = novo_g + heuristica[vizinho]
                 heapq.heappush(fila, (f_novo, novo_g, vizinho, caminho + [vizinho]))
 
-    return None, float('inf')  # Se nenhum caminho for encontrado
-
+    # Retornar o melhor caminho encontrado, mesmo que não chegue ao destino
+    return melhor_caminho, float('inf')
 
 class AStarDinamicoComRestricoes:
+    """
+    A* Dinâmico com restrições que garante um caminho, mesmo que não chegue ao destino.
+    """
     def __init__(self, grafo, zonas, inicio, destino, heuristica, restricoes):
         self.grafo = grafo
         self.zonas = zonas
@@ -395,12 +404,20 @@ class AStarDinamicoComRestricoes:
         self.g[inicio] = 0
         self.fila = []
         heapq.heappush(self.fila, (self.heuristica[inicio], inicio, [inicio], 0))  # (f, nó atual, caminho, combustível)
+        self.melhor_caminho = None
 
     def compute(self):
         while self.fila:
             _, atual, caminho, combustivel = heapq.heappop(self.fila)
+
+            # Atualizar melhor caminho
+            if self.melhor_caminho is None or len(caminho) > len(self.melhor_caminho):
+                self.melhor_caminho = caminho
+
+            # Verificar se chegou ao destino
             if atual == self.destino:
                 return caminho, combustivel
+
             for vizinho, atributos in self.grafo.get(atual, {}).items():
                 if (
                     atributos['condicao'] in self.restricoes['condicoes_permitidas'] and
@@ -411,27 +428,40 @@ class AStarDinamicoComRestricoes:
                     novo_combustivel = combustivel + atributos['combustivel'][self.restricoes['veiculo']]
                     f = novo_combustivel + self.heuristica[vizinho]
                     heapq.heappush(self.fila, (f, vizinho, caminho + [vizinho], novo_combustivel))
-        return None, float('inf')
 
+        # Retornar o melhor caminho encontrado, mesmo que não chegue ao destino
+        return self.melhor_caminho, float('inf')
 
 class LPAStarComRestricoes:
+    """
+    Implementação do LPA* com restrições que garante um caminho, mesmo que não chegue ao destino.
+    """
     def __init__(self, grafo, zonas, inicio, destino, restricoes):
         self.grafo = grafo
         self.zonas = zonas
         self.inicio = inicio
         self.destino = destino
         self.restricoes = restricoes
+
+        # Inicializar as variáveis g e rhs
         self.g = {n: float('inf') for n in grafo}
         self.rhs = {n: float('inf') for n in grafo}
         self.g[inicio] = 0
         self.rhs[inicio] = 0
+
+        # Fila de prioridade
         self.fila = []
         heapq.heappush(self.fila, (self.calculate_key(inicio), inicio))
 
+        # Melhor caminho rastreado
+        self.melhor_caminho = None
+
     def calculate_key(self, n):
+        """Calcula a prioridade do nó na fila de prioridade."""
         return (min(self.g[n], self.rhs[n]), min(self.g[n], self.rhs[n]))
 
     def update_node(self, n):
+        """Atualiza o nó com base nas variáveis g e rhs."""
         if n != self.inicio:
             self.rhs[n] = min(
                 self.g[v] + atributos['distancia']
@@ -441,54 +471,81 @@ class LPAStarComRestricoes:
                     self.restricoes['veiculo'] in atributos['combustivel']
                 )
             )
+        # Remover o nó da fila se ele já estiver lá
         self.fila = [(k, v) for k, v in self.fila if v != n]
         heapq.heapify(self.fila)
+
+        # Recolocar o nó na fila se necessário
         if self.g[n] != self.rhs[n]:
             heapq.heappush(self.fila, (self.calculate_key(n), n))
 
     def compute_shortest_path(self):
+        """Calcula o caminho de menor custo."""
         while self.fila and (
             self.fila[0][0] < self.calculate_key(self.destino) or
             self.g[self.destino] != self.rhs[self.destino]
         ):
             _, atual = heapq.heappop(self.fila)
+
             if self.g[atual] > self.rhs[atual]:
                 self.g[atual] = self.rhs[atual]
                 for vizinho, atributos in self.grafo.get(atual, {}).items():
-                    self.update_node(vizinho)
+                    if (
+                        atributos['condicao'] in self.restricoes['condicoes_permitidas'] and
+                        self.restricoes['veiculo'] in atributos['combustivel']
+                    ):
+                        self.update_node(vizinho)
             else:
                 self.g[atual] = float('inf')
                 self.update_node(atual)
                 for vizinho, atributos in self.grafo.get(atual, {}).items():
-                    self.update_node(vizinho)
+                    if (
+                        atributos['condicao'] in self.restricoes['condicoes_permitidas'] and
+                        self.restricoes['veiculo'] in atributos['combustivel']
+                    ):
+                        self.update_node(vizinho)
 
     def get_path(self):
+        """Reconstrói o caminho do início ao destino."""
         atual = self.destino
         caminho = [atual]
         while atual != self.inicio:
-            vizinho = min(
-                (v for v, atributos in self.grafo.get(atual, {}).items() if self.rhs[atual] == self.g[v]),
-                key=lambda v: self.g[v]
+            vizinho_melhor = min(
+                (vizinho for vizinho, atributos in self.grafo.get(atual, {}).items()
+                 if atributos['condicao'] in self.restricoes['condicoes_permitidas'] and
+                    self.restricoes['veiculo'] in atributos['combustivel']),
+                key=lambda v: self.g[v],
+                default=None
             )
-            caminho.append(vizinho)
-            atual = vizinho
-        return caminho[::-1]
-
+            if vizinho_melhor is None:
+                break
+            caminho.append(vizinho_melhor)
+            atual = vizinho_melhor
+        return caminho[::-1] if caminho[-1] == self.inicio else caminho
 
 def busca_custo_uniforme_com_restricoes(grafo, zonas, inicio, destino, restricoes):
+    """
+    UCS com restrições que garante um caminho, mesmo que não chegue ao destino.
+    """
     fila = [(0, inicio, [inicio], 0)]  # (custo acumulado, nó atual, caminho, combustível usado)
     visitados = set()
+    melhor_caminho = None
 
     while fila:
         custo, atual, caminho, combustivel = heapq.heappop(fila)
+        visitados.add(atual)
+
+        # Atualizar melhor caminho
+        if melhor_caminho is None or len(caminho) > len(melhor_caminho):
+            melhor_caminho = caminho
+
+        # Verificar se chegou ao destino
         if atual == destino:
             return caminho, combustivel
-        if atual in visitados:
-            continue
-        visitados.add(atual)
 
         for vizinho, atributos in grafo.get(atual, {}).items():
             if (
+                vizinho not in visitados and
                 atributos['condicao'] in restricoes['condicoes_permitidas'] and
                 restricoes['veiculo'] in atributos['combustivel'] and
                 combustivel + atributos['combustivel'][restricoes['veiculo']] <= restricoes['combustivel_maximo'] and
@@ -497,7 +554,8 @@ def busca_custo_uniforme_com_restricoes(grafo, zonas, inicio, destino, restricoe
                 novo_combustivel = combustivel + atributos['combustivel'][restricoes['veiculo']]
                 heapq.heappush(fila, (custo + atributos['distancia'], vizinho, caminho + [vizinho], novo_combustivel))
 
-    return None, float('inf')
+    # Retornar o melhor caminho encontrado, mesmo que não chegue ao destino
+    return melhor_caminho, float('inf')
 
 def dinamicas(grafo, zonas):
     print("\n=============================")
@@ -603,6 +661,14 @@ def main():
         while True :
             printMenu()
             escolha = int(input("Escolha o algoritmo: "))
+            restricoes = {
+                    'veiculo': 'camiao',
+                    'combustivel_maximo': 50,
+                    'condicoes_permitidas': {'livre'}
+                }
+            origem='A'
+            destino='F'
+            
             if(escolha == 8):
                 print("\n=============================")
                 print("     DIGITE AS RESTRIÇÕES      ")
@@ -687,5 +753,6 @@ def main():
         
     else:
         print("Fechar Programa")
+     
 if __name__ == "__main__":
     main()
