@@ -1,16 +1,18 @@
 # Zonas
-A; alta; 3000; {'camião': True, 'jipe': True, 'drone': True}
-B; média; 200; {'camião': True, 'jipe': False, 'drone': True}
-C; baixa; 10; {'camião': False, 'jipe': True, 'drone': True}
-D; alta; 2000; {'camião': True, 'jipe': True, 'drone': True}
-E; média; 100; {'camião': True, 'jipe': True, 'drone': False}
-F; alta; 5000; {'camião': False, 'jipe': True, 'drone': True}
+A; alta; 3000; {'camiao': True, 'jipe': True, 'drone': True}; 20
+B; média; 200; {'camiao': True, 'jipe': False, 'drone': True}; 30
+C; baixa; 10; {'camiao': False, 'jipe': True, 'drone': True}; 10
+D; alta; 2000; {'camiao': True, 'jipe': True, 'drone': True}; 35
+E; média; 100; {'camiao': True, 'jipe': True, 'drone': False}; 25
+F; alta; 5000; {'camiao': False, 'jipe': True, 'drone': True}; 15
 
 # Rotas
-A -> B; 12; livre; {'camião': 6, 'jipe': 4, 'drone': 2}
+A -> B; 12; livre; {'camiao': 6, 'jipe': 4, 'drone': 2}
 A -> C; 15; livre; {'jipe': 3, 'drone': 1}
-B -> D; 10; livre; {'camião': 8, 'jipe': 5, 'drone': 3}
+B -> D; 10; livre; {'camiao': 8, 'jipe': 5, 'drone': 3}
 C -> D; 18; somente_drones; {'drone': 4}
-D -> E; 20; livre; {'camião': 10, 'jipe': 6}
+D -> E; 20; livre; {'camiao': 10, 'jipe': 6}
+D -> E; 20; livre; {'camiao': 10, 'jipe': 6}
+D -> F; 16; somente_drones; {'drone': 7}
 E -> F; 25; livre; {'jipe': 8, 'drone': 5}
 F -> A; 30; bloqueada; {}
