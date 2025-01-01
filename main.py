@@ -194,8 +194,8 @@ def dfs(grafo, inicio, destino, caminho=None, visitados=None):
 
     for vizinho, atributos in grafo.get(inicio, {}).items():
         if (
-            vizinho not in visitados and 
-            atributos['condicao'] == 'livre' or atributos['condicao'] == 'somente_drones'  # Apenas caminhos livres
+            vizinho not in visitados #and 
+            #atributos['condicao'] == 'livre' and atributos['condicao'] == 'somente_drones'  # Apenas caminhos livres
         ):
             resultado = dfs(grafo, vizinho, destino, caminho + [vizinho], visitados)
             if resultado:
@@ -219,8 +219,8 @@ def bfs(grafo, inicio, destino):
 
         for vizinho, atributos in grafo.get(atual, {}).items():
             if (
-                vizinho not in visitados and 
-                atributos['condicao'] == 'livre'  # Apenas caminhos livres
+                vizinho not in visitados #and 
+                #atributos['condicao'] == 'livre'  # Apenas caminhos livres
             ):
                 fila.append((vizinho, caminho + [vizinho]))
 
@@ -244,7 +244,7 @@ def algoritmo_greedy(grafo, inicio, destino, heuristica):
         visitados.add(atual)
 
         for vizinho, atributos in grafo.get(atual, {}).items():
-            if atributos['condicao'] == 'livre':  # Apenas caminhos livres
+           # if atributos['condicao'] == 'livre':  # Apenas caminhos livres
                 heapq.heappush(fila, (heuristica[vizinho], vizinho, caminho + [vizinho]))
 
     return None  # Se nenhum caminho for encontrado
@@ -252,42 +252,53 @@ def algoritmo_greedy(grafo, inicio, destino, heuristica):
 
 def bfs_com_varias_restricoes(grafo, zonas, inicio, destino, restricoes):
     """
-    BFS com restrições de gravidade, combustível e acessibilidade.
+    BFS com restrições que garante um caminho, mesmo que não chegue ao destino.
     """
-    fila = deque([(inicio, [inicio], 0)])  # (nó_atual, caminho_percorrido, combustível_usado)
+    fila = deque([(inicio, [inicio], 0)])  # (nó atual, caminho percorrido, combustível usado)
     visitados = set()
-    
+    melhor_caminho = None
+
     while fila:
         atual, caminho, combustivel = fila.popleft()
-        if atual == destino:
-            return caminho, combustivel
         visitados.add(atual)
 
+        # Atualizar melhor caminho, mesmo que não chegue ao destino
+        if melhor_caminho is None or len(caminho) > len(melhor_caminho):
+            melhor_caminho = caminho
+
+        # Verificar se chegou ao destino
+        if atual == destino:
+            return caminho, combustivel
+
         for vizinho, atributos in grafo.get(atual, {}).items():
-            # Verificar restrições
             if (
                 vizinho not in visitados and
                 atributos['condicao'] in restricoes['condicoes_permitidas'] and
                 restricoes['veiculo'] in atributos['combustivel'] and
-                atributos['combustivel'][restricoes['veiculo']] + combustivel <= restricoes['combustivel_maximo'] and
+                combustivel + atributos['combustivel'][restricoes['veiculo']] <= restricoes['combustivel_maximo'] and
                 restricoes['veiculo'] in zonas[vizinho]['acessibilidade']
             ):
                 fila.append((vizinho, caminho + [vizinho], combustivel + atributos['combustivel'][restricoes['veiculo']]))
 
-    return None, float('inf')  # Caminho não encontrado
+    # Retornar o melhor caminho encontrado, mesmo que não chegue ao destino
+    return melhor_caminho, combustivel
 
 
 def dfs_com_varias_restricoes(grafo, zonas, inicio, destino, restricoes, caminho=None, visitados=None, combustivel=0):
     """
-    DFS com restrições de gravidade, combustível e acessibilidade.
+    DFS com restrições que garante um caminho, mesmo que não chegue ao destino.
     """
     if caminho is None:
         caminho = [inicio]
     if visitados is None:
         visitados = set()
+    visitados.add(inicio)
+
+    # Verificar se chegou ao destino
     if inicio == destino:
         return caminho, combustivel
-    visitados.add(inicio)
+
+    melhor_caminho = caminho
 
     for vizinho, atributos in grafo.get(inicio, {}).items():
         if (
@@ -297,31 +308,40 @@ def dfs_com_varias_restricoes(grafo, zonas, inicio, destino, restricoes, caminho
             combustivel + atributos['combustivel'][restricoes['veiculo']] <= restricoes['combustivel_maximo'] and
             restricoes['veiculo'] in zonas[vizinho]['acessibilidade']
         ):
-            resultado, consumo = dfs_com_varias_restricoes(
-                grafo, zonas, vizinho, destino, restricoes,
-                caminho + [vizinho], visitados,
+            novo_caminho, novo_combustivel = dfs_com_varias_restricoes(
+                grafo, zonas, vizinho, destino, restricoes, caminho + [vizinho], visitados,
                 combustivel + atributos['combustivel'][restricoes['veiculo']]
             )
-            if resultado:
-                return resultado, consumo
+            if novo_caminho and len(novo_caminho) > len(melhor_caminho):
+                melhor_caminho = novo_caminho
 
-    return None, float('inf')  # Caminho não encontrado
+    # Retornar o melhor caminho encontrado
+    return melhor_caminho, combustivel
 
 
 def algoritmo_greedy_com_restricoes(grafo, zonas, inicio, destino, heuristica, restricoes):
+    """
+    Greedy com restrições que garante um caminho, mesmo que não chegue ao destino.
+    """
     fila = [(heuristica[inicio], inicio, [inicio], 0)]  # (h, nó atual, caminho, combustível usado)
     visitados = set()
+    melhor_caminho = None
 
     while fila:
         h, atual, caminho, combustivel = heapq.heappop(fila)
+        visitados.add(atual)
+
+        # Atualizar melhor caminho
+        if melhor_caminho is None or len(caminho) > len(melhor_caminho):
+            melhor_caminho = caminho
+
+        # Verificar se chegou ao destino
         if atual == destino:
             return caminho, combustivel
-        if atual in visitados:
-            continue
-        visitados.add(atual)
 
         for vizinho, atributos in grafo.get(atual, {}).items():
             if (
+                vizinho not in visitados and
                 atributos['condicao'] in restricoes['condicoes_permitidas'] and
                 restricoes['veiculo'] in atributos['combustivel'] and
                 combustivel + atributos['combustivel'][restricoes['veiculo']] <= restricoes['combustivel_maximo'] and
@@ -330,7 +350,8 @@ def algoritmo_greedy_com_restricoes(grafo, zonas, inicio, destino, heuristica, r
                 novo_combustivel = combustivel + atributos['combustivel'][restricoes['veiculo']]
                 heapq.heappush(fila, (heuristica[vizinho], vizinho, caminho + [vizinho], novo_combustivel))
 
-    return None, float('inf')
+    # Retornar o melhor caminho encontrado
+    return melhor_caminho, combustivel
 
 
 def algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, inicio, destino, heuristica, restricoes, combustivel=0):
@@ -530,7 +551,6 @@ def dinamicas(grafo, zonas):
     return grafo
 
    
-
 def printMenu():
     print("\n=============================")
     print("     ALGORITMOS DE BUSCA       ")
@@ -542,6 +562,8 @@ def printMenu():
     print("5. A* Dinâmico")
     print("6. LPA*")
     print("7. Busca Uniforme")
+    print("8. Restrições")
+    print("9. Adicionar Nova Rota")
     print("0. Sair")
     print("=============================")
 
@@ -568,111 +590,83 @@ def main():
     grafo, zonas = importar_grafo_txt(caminho)
     mostrar_grafo(grafo, zonas)
 
-    print("\n=============================")
+    print("\n============================")
     print("        RESTRIÇÕES           ")
     print("=============================")
     print("1. Com Restrições")
     print("2. Sem Restrições")
+    print("0. Sair")
     print("=============================")
     restricao = int(input("Escolha a opção: "))
-
-
-    while True:  # Loop principal
-        if restricao == 1:
-            dinamicas(grafo, zonas)
+    
+    if(restricao == 1):
+        while True :
             printMenu()
-        else:
-            printMenus2()
+            escolha = int(input("Escolha o algoritmo: "))
+            if(escolha == 8):
+                print("\n=============================")
+                print("     DIGITE AS RESTRIÇÕES      ")
+                print("===============================")
+                veiculo = input("Digite o tipo de veículo (camiao, jipe, drone): ").strip().lower()
+                combustivel_maximo = int(input("Digite o combustível máximo do veículo: "))
+                condicoes_permitidas = input("Digite as condições permitidas (separadas por vírgula, ex: livre, somente_drones): ").strip().split(',')
 
-        escolha = int(input("Escolha o algoritmo: "))
-
-        if escolha == 0:
-            print("\n=============================")
-            print("     A ENCERRAR O PROGRAMA      ")
-            print("=============================")
-            break
-
-        if restricao == 1:
-            print("\n=============================")
-            print("     SELEÇÃO DO VEÍCULO       ")
-            print("=============================")
-            print("1. Camião")
-            print("2. Jipe")
-            print("3. Drone")
-            print("=============================")
-            veiculo = int(input("Escolha o veículo: "))
-            if veiculo == 1:
-                tipoVeiculo = 'camião'
-                combustivel = int(input("Insira a quantidade de combustível: "))
+                # Criar restrições
                 restricoes = {
-                    'veiculo': tipoVeiculo,
-                    'combustivel_maximo': combustivel,
-                    'condicoes_permitidas': {'livre'}
-                }    
-            elif veiculo == 2:
-                tipoVeiculo = 'jipe'
-                combustivel = int(input("Insira a quantidade de combustível: "))
-                restricoes = {
-                    'veiculo': tipoVeiculo,
-                    'combustivel_maximo': combustivel,
-                    'condicoes_permitidas': {'livre'}
-                }    
-            elif veiculo == 3:
-                tipoVeiculo = 'drone'
-                combustivel = int(input("Insira a quantidade de combustível: "))
-                restricoes = {
-                    'veiculo': tipoVeiculo,
-                    'combustivel_maximo': combustivel,
-                    'condicoes_permitidas': {'livre','somente_drones'}
-                }    
-            else:
-                print("Opção inválida! Tente novamente.")
-                continue
-
-            heuristica = {'A': 30, 'B': 20, 'C': 15, 'D': 10, 'E': 0}
-            origem, destino = 'A', 'E'
-
-            if escolha == 1:
+                    'veiculo': veiculo,
+                    'combustivel_maximo': combustivel_maximo,
+                    'condicoes_permitidas': set(map(str.strip, condicoes_permitidas))
+                }
+                #origem e destino
+                origem = input("Digite a origem: ").strip().upper()
+                destino = input("Digite o destino: ").strip().upper()
+            if(escolha == 1):
                 caminho, combustivel = dfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
                 print(f"\nCaminho encontrado (DFS): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do DFS")
-            elif escolha == 2:
+            if(escolha == 2):
                 caminho, combustivel = bfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
                 print(f"\nCaminho encontrado (BFS): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do BFS")
-            elif escolha == 3:
-                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10}
+            if(escolha == 3):
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10, 'F':0}
                 caminho, combustivel = algoritmo_greedy_com_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 print(f"\nCaminho encontrado (Greedy): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
-            elif escolha == 4:
+            if(escolha == 4):
                 caminho, combustivel = algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 print(f"\nCaminho encontrado (A*): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do A*")
-            elif escolha == 5:
+            if(escolha == 5):
                 astar_dinamico = AStarDinamicoComRestricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 caminho, custo = astar_dinamico.compute()
                 print(f"\nCaminho encontrado (A* Dinâmico): {caminho}")
                 print(f"Combustível usado: {custo}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do A* Dinâmico")
-            elif escolha == 6:
+            if(escolha == 6):
                 lpa = LPAStarComRestricoes(grafo, zonas, origem, destino, restricoes)
                 lpa.compute_shortest_path()
                 caminho = lpa.get_path()
                 print(f"\nCaminho encontrado (LPA*): {caminho}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do LPA*")
-            elif escolha == 7:
+            if(escolha == 7):
                 caminho, combustivel = busca_custo_uniforme_com_restricoes(grafo, zonas, origem, destino, restricoes)
                 print(f"\nCaminho encontrado (UCS): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado UCS")
-            else:
-                print("Opção inválida!")
-        else:
+            if(escolha == 9):
+                dinamicas(grafo, zonas)
+            if( escolha == 0):
+                break
+                         
+    elif(restricao == 2): 
+        while True :
+            printMenus2()
+            escolha = int(input("Escolha o algoritmo: "))
             inicio, destino = 'A', 'E'
             if escolha == 1:
                 caminho = dfs(grafo, inicio, destino)
@@ -689,7 +683,9 @@ def main():
                 desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
             else:
                 print("Opção inválida!")
-    
-
+                break
+        
+    else:
+        print("Fechar Programa")
 if __name__ == "__main__":
     main()
