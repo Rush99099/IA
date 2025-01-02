@@ -658,16 +658,17 @@ def main():
     restricao = int(input("Escolha a opção: "))
     
     if(restricao == 1):
+        restricoes = {
+                    'veiculo': 'jipe',
+                    'combustivel_maximo': 25,
+                    'condicoes_permitidas': {'livre'}
+                }
+        origem='A'
+        destino='F'
         while True :
             printMenu()
             escolha = int(input("Escolha o algoritmo: "))
-            restricoes = {
-                    'veiculo': 'camiao',
-                    'combustivel_maximo': 50,
-                    'condicoes_permitidas': {'livre'}
-                }
-            origem='A'
-            destino='F'
+            
             
             if(escolha == 8):
                 print("\n=============================")
@@ -686,6 +687,8 @@ def main():
                 #origem e destino
                 origem = input("Digite a origem: ").strip().upper()
                 destino = input("Digite o destino: ").strip().upper()
+                #print(restricoes)
+                #print("Nova Origem:" + origem + " Novo Destino: " + destino)
             if(escolha == 1):
                 caminho, combustivel = dfs_com_varias_restricoes(grafo, zonas, origem, destino, restricoes)
                 print(f"\nCaminho encontrado (DFS): {caminho}")
@@ -703,11 +706,13 @@ def main():
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do Greedy")
             if(escolha == 4):
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10, 'F':0}
                 caminho, combustivel = algoritmo_a_estrela_com_varias_restricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 print(f"\nCaminho encontrado (A*): {caminho}")
                 print(f"Combustível usado: {combustivel}")
                 desenhar_resultado(grafo, caminho, titulo="Resultado do A*")
             if(escolha == 5):
+                heuristica = {'A': 50, 'B': 40, 'C': 30, 'D': 20, 'E': 10, 'F':0}
                 astar_dinamico = AStarDinamicoComRestricoes(grafo, zonas, origem, destino, heuristica, restricoes)
                 caminho, custo = astar_dinamico.compute()
                 print(f"\nCaminho encontrado (A* Dinâmico): {caminho}")
